@@ -3,6 +3,7 @@ import glob
 from skimage import io, color, transform
 import urllib.request
 import tarfile
+import numpy as np
 
 
 def download_extract_data():
@@ -41,7 +42,12 @@ def image_scale_to_32x32(image):  # expects greyscale image
     return transform.resize(image, (32, 32))
 
 
+def stack_image(image):
+    return np.reshape(image, -1)
+
+
 def main():
+    array = []
     persons = {}
 
     download_extract_data()
@@ -66,9 +72,12 @@ def main():
 
             person_images.append(cropped)
 
+            array.append(stack_image(cropped))
+
         persons[current_dir] = person_images
         os.chdir("../")
     print(persons.__sizeof__())
+    to_nd_array = np.array(array)
 
 
 if __name__ == "__main__":
