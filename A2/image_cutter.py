@@ -46,9 +46,30 @@ def stack_image(image):
     return np.reshape(image, -1)
 
 
+def unstack_image(image):
+    return np.reshape(image, (32, 32))
+
+
+def hauptkomponentenanalyse(data):
+    data = data - data.mean()
+    data = data / data.std()
+    return np.linalg.svd(data.values, full_matrices=False)
+
+
+def image_to_32x32_gray(image_path):
+    image = io.imread(image_path)
+    image = color.rgb2gray(image)
+    cropped = image_crop_to_square(image)
+    cropped = image_crop_face(cropped)
+    cropped = image_scale_to_32x32(cropped)
+    return cropped
+
+
 def main():
     array = []
     persons = {}
+
+    testbilder = {}
 
     download_extract_data()
     os.chdir("lfw_funneled")
@@ -61,23 +82,21 @@ def main():
 
         # Read in all except one image in each dir
         images = glob.glob("*.jpg")
-        images.pop(0)
+        test_image = images.pop(0)
+        test_image = image_to_32x32_gray(test_image)
+        testbilder[current_dir] = test_image
         #print(*images, sep='\n')
         for img in images:
-            image = io.imread(img)
-            image = color.rgb2gray(image)
-            cropped = image_crop_to_square(image)
-            cropped = image_crop_face(cropped)
-            cropped = image_scale_to_32x32(cropped)
-
+            cropped = image_to_32x32_gray(img)
             person_images.append(cropped)
-
             array.append(stack_image(cropped))
 
         persons[current_dir] = person_images
         os.chdir("../")
     print(persons.__sizeof__())
+
     to_nd_array = np.array(array)
+    [u, d, v] = hauptkomponentenanalyse(to_nd_array)
 
 
 if __name__ == "__main__":
