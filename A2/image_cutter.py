@@ -11,10 +11,16 @@ def download_extract_data():
     if not os.path.isfile("lfw-funneled.tgz"):
         print("Downloading: " + url)
         urllib.request.urlretrieve(url, "lfw-funneled.tgz")
+    else:
+        print("File already downloaded!")
+
     if not os.path.isdir("lfw-funneled"):
+        print("Extracting images")
         tar = tarfile.open("lfw-funneled.tgz", "r:gz")
         tar.extractall()
         tar.close()
+    else:
+        print("Images already extracted!")
 
 
 def image_crop_to_square(image):  # expects greyscale image
@@ -53,7 +59,7 @@ def unstack_image(image):
 def hauptkomponentenanalyse(data):
     data = data - data.mean()
     data = data / data.std()
-    return np.linalg.svd(data.values, full_matrices=False)
+    return np.linalg.svd(data, full_matrices=False)
 
 
 def image_to_32x32_gray(image_path):
@@ -93,9 +99,11 @@ def main():
 
         persons[current_dir] = person_images
         os.chdir("../")
+    os.chdir("../")
     print(persons.__sizeof__())
 
     to_nd_array = np.array(array)
+    print(to_nd_array.shape)
     [u, d, v] = hauptkomponentenanalyse(to_nd_array)
 
 
